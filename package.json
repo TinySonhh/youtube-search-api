@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/damonwonghv/youtube-search-api.git"
+    "url": "git+https://github.com/TinySonhh/youtube-search-api.git"
   },
   "keywords": [
     "Youtube",
@@ -24,12 +24,12 @@
     "live",
     "channel"
   ],
-  "author": "thisisdamon",
+  "author": "tinysonhh",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/damonwonghv/youtube-search-api/issues"
+    "url": "https://github.com/TinySonhh/youtube-search-api/issues"
   },
-  "homepage": "https://github.com/damonwonghv/youtube-search-api#readme",
+  "homepage": "https://github.com/TinySonhh/youtube-search-api#readme",
   "dependencies": {
     "axios": "^0.21.0"
     "crypto-random-string": "^3.3.1",
