@@ -829,11 +829,11 @@ const compactVideoRenderer = (json) => {
     ? compactVideoRendererJson.shortBylineText.runs[0].navigationEndpoint
         .browseEndpoint.browseId
     : "";
-  const duration = compactVideoRendererJson.lengthText? compactVideoRendererJson.lengthText.simpleText:'0';
-  const viewCount = compactVideoRendererJson.viewCountText.simpleText.replace(
+  const duration = compactVideoRendererJson.lengthText? compactVideoRendererJson.lengthText.simpleText:'00:00';
+  const viewCount = compactVideoRendererJson.viewCountText? compactVideoRendererJson.viewCountText.simpleText.replace(
     /[^0-9.]+/g,
     ""
-  );
+  ):0;
   const publishedAt = compactVideoRendererJson.publishedTimeText.simpleText;
   const channelThumbnail =
     compactVideoRendererJson.channelThumbnail &&

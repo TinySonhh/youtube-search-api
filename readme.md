@@ -63,6 +63,13 @@ const VideoRender: (json: any) => {
 }
 ```
 
+### Example
+
+```javascript
+ytSearchApi.SearchVideosByKeyword("Hello").then((result) => {
+	console.log(result.items[0], result.nextPage);
+});
+```
 
 ## 2. FetchWhatToWatchByYouTube (Promise)
 FetchWhatToWatchByYouTube
@@ -93,6 +100,13 @@ const FetchWhatToWatchByYouTube: (lang?: string, country?: string, pageToken?: s
 - JSON of items found, and nextPage token
 - Same as SearchVideosByKeyword
 
+### Example
+
+```javascript
+ytSearchApi.FetchWhatToWatchByYouTube().then((result) => {
+	console.log(result);
+});
+```
 
 
 ## 3. FetchTrending (Promise)
@@ -124,6 +138,14 @@ const FetchTrending: (tab?: any, lang?: any, country?: any, limit?: any) => Prom
 ### Result
 - JSON of items found, and nextPage token
 - Same as SearchVideosByKeyword
+
+### Example
+
+```javascript
+ytSearchApi.FetchTrending("0").then((result) => {
+	console.log(result.items && result.items[0], result.nextPage);
+});
+```
 
 
 ## 4. GetVideoDetailsWithSuggestion (Promise)
@@ -171,6 +193,15 @@ const GetVideoDetailsWithSuggestion: (videoId: any, lang?: any, country?: any) =
     suggestion: any;
 }
 ```
+
+### Example
+
+```javascript
+ytSearchApi.GetVideoDetailsWithSuggestion("oQl9XjVKdQ4").then((result) => {
+	console.log(result);
+});
+```
+
 
 ## Notice:
 1. We just focus on the 4 functions above.
