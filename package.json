@@ -1,6 +1,6 @@
 {
-  "name": "yt-search-api",
-  "version": "1..0.0",
+  "name": "@hssoftvn/yt-search-api",
+  "version": "1.0.1",
   "description": "Node.js easy to get Youtube results by provided keywords, no Login or API key required!",
   "main": "index.js",
   "scripts": {
@@ -31,7 +31,7 @@
   },
   "homepage": "https://github.com/TinySonhh/youtube-search-api#readme",
   "dependencies": {
-    "axios": "^0.21.0"
-    "crypto-random-string": "^3.3.1",
+    "axios": "^0.21.0",
+    "crypto-random-string": "^3.3.1"
   }
 }

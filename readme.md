@@ -5,7 +5,7 @@ Youtube Search API is an API for getting Youtube search results.
 ## Installation
 
 ```bash
-npm install yt-search-api
+npm install @hssoftvn/yt-search-api
 ```
 
 ## Usage (import)

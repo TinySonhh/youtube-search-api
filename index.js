@@ -829,7 +829,7 @@ const compactVideoRenderer = (json) => {
     ? compactVideoRendererJson.shortBylineText.runs[0].navigationEndpoint
         .browseEndpoint.browseId
     : "";
-  const duration = compactVideoRendererJson.lengthText.simpleText;
+  const duration = compactVideoRendererJson.lengthText? compactVideoRendererJson.lengthText.simpleText:'0';
   const viewCount = compactVideoRendererJson.viewCountText.simpleText.replace(
     /[^0-9.]+/g,
     ""
