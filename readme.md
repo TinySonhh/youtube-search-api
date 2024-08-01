@@ -11,7 +11,7 @@ npm install @hssoftvn/yt-search-api
 ## Usage (import)
 
 ```node
-const ytSearchApi = require("yt-search-api");
+const ytSearchApi = require("@hssoftvn/yt-search-api");
 ```
 
 ## 1. SearchVideosByKeyword (Promise)
