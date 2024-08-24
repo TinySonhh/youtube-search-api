@@ -149,7 +149,7 @@ ytSearchApi.FetchTrending("0").then((result) => {
 
 
 ## 4. GetVideoDetailsWithSuggestion (Promise)
-Get details of current videos along with its video suggestions
+Get details of current videos along with its video suggestions, nextVideo, and endscreen elements
 
 ```javascript
 const GetVideoDetailsWithSuggestion: (videoId: any, lang?: any, country?: any) => Promise<{
@@ -163,7 +163,24 @@ const GetVideoDetailsWithSuggestion: (videoId: any, lang?: any, country?: any) =
     viewCount: any;
     publishedAt: any;
     publishedAt2: any;
-    suggestion: any;
+    suggestion: any[];
+    nextVideo: {
+        vid: any;
+        thumbnail: any;
+        title: any;
+        viewCount: any;
+        publishedTimeText: any;
+    };
+    endscreen: {
+        startMs: any,
+        elements:{
+            vid: any;
+            thumbnail: any;
+            viewCount: any;
+            title: any;
+            style: "VIDEO" || "CHANNEL";
+        }[];
+    };
 }>
 ```
 
