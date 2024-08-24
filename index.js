@@ -7,7 +7,7 @@ const youtubeEndpoint = `https://www.youtube.com`;
  * @param {String} url URL of the youtube link to search for videos
  * @returns Promise of { initdata, apiToken, context }
  */
-const GetYoutubeInitData = async (url) => {
+const GetYoutubeInitData = async (url, withPlayerResponse=false) => {
   var initdata = await {};
   var apiToken = await null;
   var context = await null;
@@ -32,7 +32,17 @@ const GetYoutubeInitData = async (url) => {
       }
 
       initdata = await JSON.parse(data);
-      return await Promise.resolve({ initdata, apiToken, context });
+
+      let playerResponse = {}
+      if(withPlayerResponse){
+        const ytPlayerResponse = await page.data.split("var ytInitialPlayerResponse =");        
+        if (ytPlayerResponse && ytPlayerResponse.length > 1) {
+          playerResponse = await ytPlayerResponse[1].split("</script>")[0].slice(0, -1);
+          playerResponse = await JSON.parse(playerResponse);
+        }
+      }
+      
+      return await Promise.resolve({ initdata, playerResponse, apiToken, context });
     } else {
       console.error("cannot_get_init_data");
       return await Promise.reject("cannot_get_init_data");
@@ -234,24 +244,37 @@ const GetVideoDetailsWithSuggestion = async (
     await `${youtubeEndpoint}/watch?v=${videoId}&hl=${lang}&gl=${country}`;
   endpoint = `${endpoint}&hl=en&gl=en`;
   try {
-    const page = await GetYoutubeInitData(endpoint);
+    const page = await GetYoutubeInitData(endpoint, true);
     const result = await page.initdata.contents.twoColumnWatchNextResults;
-    const firstContent = await result.results.results.contents[0]
-      .videoPrimaryInfoRenderer;
-    const secondContent = await result.results.results.contents[1]
-      .videoSecondaryInfoRenderer;
+    const firstContent = await result.results.results.contents[0].videoPrimaryInfoRenderer;
+    const secondContent = await result.results.results.contents[1].videoSecondaryInfoRenderer;
+    
+    const autoNextContent = await page.initdata.playerOverlays.playerOverlayRenderer.autoplay.playerOverlayAutoplayRenderer;
+    const endscreenContent = await page.playerResponse.endscreen.endscreenRenderer;
+    
+    
+    let endscreenContentElements = []
+    if(endscreenContent && endscreenContent.elements && endscreenContent.elements.length>0){
+      endscreenContentElements = await endscreenContent.elements      
+      .map((x) => {
+          let xE = x.endscreenElementRenderer
+          return {
+            vid: xE.endpoint.watchEndpoint? xE.endpoint.watchEndpoint.videoId:"-",
+            thumbnail: xE.image.thumbnails[0].url,
+            viewCount: xE.metadata?.simpleText || 0,
+            title: xE.title?.simpleText || '',
+            style: xE.style
+          }
+      })
+      .filter((x)=>x.style=="VIDEO")
+    }
+
     const res = await {
       title: firstContent.title.runs[0].text,
-      isLive: firstContent.viewCount.videoViewCountRenderer.hasOwnProperty(
-        "isLive"
-      )
-        ? firstContent.viewCount.videoViewCountRenderer.isLive
-        : false,
+      isLive: firstContent.viewCount.videoViewCountRenderer.hasOwnProperty("isLive")? firstContent.viewCount.videoViewCountRenderer.isLive: false,
       thumbnail: "",
       description:
-        secondContent.description != null
-          ? secondContent.description.runs
-          : []
+        secondContent.description != null? secondContent.description.runs: []
               .map((x) => x.text)
               .join()
               .toString(),
@@ -259,20 +282,28 @@ const GetVideoDetailsWithSuggestion = async (
       channelThumbnail:
         secondContent.owner.videoOwnerRenderer.thumbnail.thumbnails[0].url,
       duration: "",
-      viewCount:
-        firstContent.viewCount.videoViewCountRenderer.viewCount.simpleText.replace(
-          /[^0-9.]+/g,
-          ""
-        ),
-      publishedAt: firstContent.dateText.simpleText,
-      publishedAt2: firstContent.relativeDateText.simpleText,
+      viewCount: firstContent.viewCount.videoViewCountRenderer.viewCount?.simpleText?.replace(/[^0-9.]+/g,"")  || "0" ,
+      publishedAt: firstContent.dateText?.simpleText || "" ,
+      publishedAt2: firstContent.relativeDateText?.simpleText || "",
       suggestion: result.secondaryResults.secondaryResults.results
         .filter((y) => y.hasOwnProperty("compactVideoRenderer"))
         .map((x) => compactVideoRenderer(x)),
+      nextVideo: {
+        vid: autoNextContent.videoId,
+        thumbnail: autoNextContent.background.thumbnails[0].url,
+        title: autoNextContent.videoTitle?.simpleText || "",
+        viewCount: autoNextContent.shortViewCountText?.simpleText || "",
+        publishedTimeText: autoNextContent.publishedTimeText?.simpleText || ""
+      }, 
+      endscreen: {
+        startMs: endscreenContent.startMs,
+        elements: endscreenContentElements
+      }
     };
 
     return await Promise.resolve(res);
   } catch (ex) {
+    console.error(`GetVideoDetailsWithSuggestion ${ex}`)    
     return await Promise.reject(ex);
   }
 };
@@ -417,7 +448,7 @@ const FetchTrending = async (
   try {
     country = country.toUpperCase();
     endpoint = `${endpoint}&hl=${lang}&gl=${country}`;
-    console.log(endpoint);
+    //console.log(endpoint);
     const page = await GetYoutubeInitData(endpoint);
 
     const sectionListRenderer = await page.initdata.contents
@@ -598,7 +629,7 @@ const FetchApiToken = async (
     endpoint = `${endpoint}&hl=${lang}&gl=${country}`;
 
     const page = await GetYoutubeInitData(endpoint);
-    console.log(page.apiToken);
+    //console.log(page.apiToken);
     const apiToken = await page.apiToken;
     return await Promise.resolve({
       apiToken: apiToken,
@@ -775,22 +806,10 @@ const VideoRender = (json) => {
           ? videoRenderer.channelThumbnailSupportedRenderers
               .channelThumbnailWithLinkRenderer.thumbnail.thumbnails[0].url
           : "";
-      const duration =
-        videoRenderer.lengthText && videoRenderer.lengthText.simpleText
-          ? videoRenderer.lengthText.simpleText
-          : "";
-      const channelTitle =
-        videoRenderer.ownerText && videoRenderer.ownerText.runs
-          ? videoRenderer.ownerText.runs[0].text
-          : "";
-      const viewCount = (
-        videoRenderer.viewCountText && videoRenderer.viewCountText.simpleText
-          ? videoRenderer.viewCountText.simpleText
-          : ""
-      ).replace(/[^0-9.]+/g, "");
-      const publishedAt = videoRenderer.publishedTimeText
-        ? videoRenderer.publishedTimeText.simpleText
-        : "";
+      const duration =videoRenderer.lengthText && videoRenderer.lengthText.simpleText? videoRenderer.lengthText.simpleText: "";
+      const channelTitle =videoRenderer.ownerText && videoRenderer.ownerText.runs? videoRenderer.ownerText.runs[0].text: "";
+      const viewCount = videoRenderer.viewCountText?.simpleText?.replace(/[^0-9.]+/g, "")  || "0";
+      const publishedAt = videoRenderer.publishedTimeText? videoRenderer.publishedTimeText.simpleText: "";
       return {
         vid: id,
         type: isShorts? "shorts":"video",
@@ -813,6 +832,7 @@ const VideoRender = (json) => {
 };
 
 const compactVideoRenderer = (json) => {
+  //console.log(`compactVideoRenderer ...`)
   const compactVideoRendererJson = json.compactVideoRenderer;
 
   var isLive = false;
@@ -829,12 +849,9 @@ const compactVideoRenderer = (json) => {
     ? compactVideoRendererJson.shortBylineText.runs[0].navigationEndpoint
         .browseEndpoint.browseId
     : "";
-  const duration = compactVideoRendererJson.lengthText? compactVideoRendererJson.lengthText.simpleText:'00:00';
-  const viewCount = compactVideoRendererJson.viewCountText? compactVideoRendererJson.viewCountText.simpleText.replace(
-    /[^0-9.]+/g,
-    ""
-  ):0;
-  const publishedAt = compactVideoRendererJson.publishedTimeText.simpleText;
+  const duration = compactVideoRendererJson?.lengthText?.simpleText || '00:00';
+  const viewCount = compactVideoRendererJson.viewCountText?.simpleText?.replace(/[^0-9.]+/g,"") || "0" ;
+  const publishedAt = compactVideoRendererJson.publishedTimeText?.simpleText || "";
   const channelThumbnail =
     compactVideoRendererJson.channelThumbnail &&
     compactVideoRendererJson.channelThumbnail.thumbnails &&
@@ -848,7 +865,7 @@ const compactVideoRenderer = (json) => {
     thumbnail: compactVideoRendererJson.thumbnail.thumbnails
       ? compactVideoRendererJson.thumbnail.thumbnails[0].url
       : "",
-    title: compactVideoRendererJson.title.simpleText,
+    title: compactVideoRendererJson.title?.simpleText || "",
     channelTitle: compactVideoRendererJson.shortBylineText.runs[0].text,
     channelId,
     channelThumbnail,
