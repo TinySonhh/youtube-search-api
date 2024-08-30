@@ -227,6 +227,32 @@ const nextPage = async (
   }
 };
 
+const convert_MS_to_HHMMSS = (milliseconds) => {
+  const seconds = Math.floor(milliseconds / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+
+  const remainingSeconds = seconds % 60;
+  const remainingMinutes = minutes % 60;
+
+  const hoursString = hours.toString().padStart(2, '0');
+  const minutesString = minutes.toString().padStart(2, '0');
+  const secondsString = remainingSeconds.toString().padStart(2, '0');
+
+  let result = "";
+  if (hours>0){
+    result = hoursString + ":";
+  }
+  if (minutes>0){
+    result += minutesString + ":";
+  }
+  if (remainingSeconds>0){
+    result += secondsString;
+  }
+
+  return `${result}`;   
+};
+
 /**
  * Get details of current videos along with its video suggestions
  * @param {*} videoId videoId of the video
@@ -249,8 +275,8 @@ const GetVideoDetailsWithSuggestion = async (
     const firstContent = await result.results.results.contents[0].videoPrimaryInfoRenderer;
     const secondContent = await result.results.results.contents[1].videoSecondaryInfoRenderer;
     
-    const autoNextContent = await page.initdata.playerOverlays.playerOverlayRenderer.autoplay.playerOverlayAutoplayRenderer;
-    const endscreenContent = await page.playerResponse.endscreen.endscreenRenderer;
+    const autoNextContent = await page.initdata.playerOverlays.playerOverlayRenderer.autoplay?.playerOverlayAutoplayRenderer || {};
+    let endscreenContent = await page.playerResponse.endscreen?.endscreenRenderer || undefined;
     
     
     let endscreenContentElements = []
@@ -259,28 +285,37 @@ const GetVideoDetailsWithSuggestion = async (
       .map((x) => {
           let xE = x.endscreenElementRenderer
           return {
-            vid: xE.endpoint.watchEndpoint? xE.endpoint.watchEndpoint.videoId:"-",
-            thumbnail: xE.image.thumbnails[0].url,
-            viewCount: xE.metadata?.simpleText || 0,
+            vid: xE.endpoint?.watchEndpoint?.videoId || "-",
+            type: xE.style?.toLowerCase() || "none", 
+            thumbnail: xE.image?.thumbnails[0]?.url || "",
             title: xE.title?.simpleText || '',
-            style: xE.style
+            channelTitle: "", channelId: "", channelThumbnail:"",
+            duration: "",
+            viewCount: xE.metadata?.simpleText || 0,    
+            publishedAt: "",
           }
       })
-      .filter((x)=>x.style=="VIDEO")
+      .filter((x)=>x.type=="video")
+    }
+
+    let nextVideoElement = {
+      vid: autoNextContent?.videoId || "" ,
+      type: "video",        
+      thumbnail: autoNextContent?.background?.thumbnails[0]?.url || "",
+      title: autoNextContent?.videoTitle?.simpleText || "",
+      channelTitle: "", channelId: "", channelThumbnail:"", duration: "",
+      viewCount: autoNextContent?.shortViewCountText?.simpleText || "",
+      publishedAt: autoNextContent?.publishedTimeText?.simpleText || "",
+      isLive: false
     }
 
     const res = await {
       title: firstContent.title.runs[0].text,
-      isLive: firstContent.viewCount.videoViewCountRenderer.hasOwnProperty("isLive")? firstContent.viewCount.videoViewCountRenderer.isLive: false,
+      isLive: firstContent.viewCount?.videoViewCountRenderer?.isLive || false,
       thumbnail: "",
-      description:
-        secondContent.description != null? secondContent.description.runs: []
-              .map((x) => x.text)
-              .join()
-              .toString(),
+      description: (secondContent?.description?.runs || []).map((x) => x.text).join().toString(),
       channel: secondContent.owner.videoOwnerRenderer.title.runs[0].text,
-      channelThumbnail:
-        secondContent.owner.videoOwnerRenderer.thumbnail.thumbnails[0].url,
+      channelThumbnail: secondContent.owner.videoOwnerRenderer.thumbnail.thumbnails[0].url,
       duration: "",
       viewCount: firstContent.viewCount.videoViewCountRenderer.viewCount?.simpleText?.replace(/[^0-9.]+/g,"")  || "0" ,
       publishedAt: firstContent.dateText?.simpleText || "" ,
@@ -288,15 +323,9 @@ const GetVideoDetailsWithSuggestion = async (
       suggestion: result.secondaryResults.secondaryResults.results
         .filter((y) => y.hasOwnProperty("compactVideoRenderer"))
         .map((x) => compactVideoRenderer(x)),
-      nextVideo: {
-        vid: autoNextContent.videoId,
-        thumbnail: autoNextContent.background.thumbnails[0].url,
-        title: autoNextContent.videoTitle?.simpleText || "",
-        viewCount: autoNextContent.shortViewCountText?.simpleText || "",
-        publishedTimeText: autoNextContent.publishedTimeText?.simpleText || ""
-      }, 
+      nextVideo: nextVideoElement, 
       endscreen: {
-        startMs: endscreenContent.startMs,
+        startMs: endscreenContent?.startMs || 0,
         elements: endscreenContentElements
       }
     };

@@ -1,6 +1,6 @@
 {
   "name": "@hssoftvn/yt-search-api",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Node.js easy to get Youtube results by provided keywords, no Login or API key required!",
   "main": "index.js",
   "scripts": {

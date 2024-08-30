@@ -188,7 +188,7 @@ const GetVideoDetailsWithSuggestion: (videoId: any, lang?: any, country?: any) =
 
 | Parameter     | Type        | Value                                                   |
 | ------------  | ----------  | ------------------------------------------------------  |
-| videoId           | Number      | 0=now, 1=music, 2=gaming, 3=movies                      |
+| videoId       | String      | Video Id                                                |
 | lang          | String      | up to you                                               |
 | country       | String      | up to you                                               |
 
@@ -208,6 +208,22 @@ const GetVideoDetailsWithSuggestion: (videoId: any, lang?: any, country?: any) =
     publishedAt: any;
     publishedAt2: any;
     suggestion: any;
+    nextVideo: {
+        vid: any;
+        thumbnail: any;
+        title: any;
+        viewCount: any;
+        publishedTimeText: any;
+    };
+    endscreen: {
+        startMs: any,
+        elements:{
+            vid: any;
+            thumbnail: any;
+            viewCount: any;
+            title: any;
+        }[];
+    };
 }
 ```
 
