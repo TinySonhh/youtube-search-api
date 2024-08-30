@@ -250,7 +250,7 @@ const convert_MS_to_HHMMSS = (milliseconds) => {
     result += secondsString;
   }
 
-  return `${result}`;   
+  return `${result}`;
 };
 
 /**

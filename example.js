@@ -1,4 +1,5 @@
-const ytSearchApi = require("@hssoftvn/yt-search-api")
+const ytSearchApi = require("./index.js")
+//const ytSearchApi = require("@hssoftvn/yt-search-api")
 
 ytSearchApi.SearchVideosByKeyword("Hello").then((result) => {result.items && console.log(result.items[0], result.nextPage);});
 
