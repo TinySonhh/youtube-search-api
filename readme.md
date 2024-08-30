@@ -210,18 +210,31 @@ const GetVideoDetailsWithSuggestion: (videoId: any, lang?: any, country?: any) =
     suggestion: any;
     nextVideo: {
         vid: any;
+        type: string;
         thumbnail: any;
         title: any;
+        channelTitle: string;
+        channelId: string;
+        channelThumbnail: string;
+        duration: string;
         viewCount: any;
-        publishedTimeText: any;
+        publishedAt: any;
+        isLive: boolean;
     };
     endscreen: {
         startMs: any,
         elements:{
             vid: any;
+            type: string;
             thumbnail: any;
-            viewCount: any;
             title: any;
+            channelTitle: string;
+            channelId: string;
+            channelThumbnail: string;
+            duration: string;
+            viewCount: any;
+            publishedAt: any;
+            isLive: boolean;
         }[];
     };
 }
