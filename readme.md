@@ -163,23 +163,11 @@ const GetVideoDetailsWithSuggestion: (videoId: any, lang?: any, country?: any) =
     viewCount: any;
     publishedAt: any;
     publishedAt2: any;
-    suggestion: any[];
-    nextVideo: {
-        vid: any;
-        thumbnail: any;
-        title: any;
-        viewCount: any;
-        publishedTimeText: any;
-    };
+    suggestion: ResultItem[];
+    nextVideo: ResultItem;
     endscreen: {
         startMs: any,
-        elements:{
-            vid: any;
-            thumbnail: any;
-            viewCount: any;
-            title: any;
-            style: "VIDEO" || "CHANNEL";
-        }[];
+        elements:ResultItem[];
     };
 }>
 ```
@@ -207,36 +195,27 @@ const GetVideoDetailsWithSuggestion: (videoId: any, lang?: any, country?: any) =
     viewCount: any;
     publishedAt: any;
     publishedAt2: any;
-    suggestion: any;
-    nextVideo: {
-        vid: any;
-        type: string;
-        thumbnail: any;
-        title: any;
-        channelTitle: string;
-        channelId: string;
-        channelThumbnail: string;
-        duration: string;
-        viewCount: any;
-        publishedAt: any;
-        isLive: boolean;
-    };
+    suggestion: ResultItem[] || [];
+    nextVideo: ResultItem;
     endscreen: {
         startMs: any,
-        elements:{
-            vid: any;
-            type: string;
-            thumbnail: any;
-            title: any;
-            channelTitle: string;
-            channelId: string;
-            channelThumbnail: string;
-            duration: string;
-            viewCount: any;
-            publishedAt: any;
-            isLive: boolean;
-        }[];
+        elements:ResultItem [];
     };
+}
+
+//Structure of ResultItem
+ResultItem: {
+	vid: any;
+	type: string;
+	thumbnail: any;
+	title: any;
+	channelTitle: string;
+	channelId: string;
+	channelThumbnail: string;
+	duration: string;
+	viewCount: any;
+	publishedAt: any;
+	isLive: boolean;
 }
 ```
 
